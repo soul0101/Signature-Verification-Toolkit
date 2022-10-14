@@ -109,13 +109,13 @@ def st_ui_sign_verification():
     if orig_sign is not None:
         orig_sign_pil = Image.open(orig_sign).convert(mode='RGB')
     else:
-        orig_sign_pil = Image.open(os.path.join(DIR, r'data\test\extractor\forgeries_2_12.png')).convert(mode='RGB')
+        orig_sign_pil = Image.open(os.path.join(DIR, r'./data/test/extractor/forgeries_2_12.png')).convert(mode='RGB')
     orig_sign_np = pil_to_np(orig_sign_pil)
 
     if check_sign is not None:
         check_sign_pil = Image.open(check_sign).convert(mode='RGB')
     else:
-        check_sign_pil = Image.open(os.path.join(DIR, r'data\test\extractor\original_2_11.png')).convert(mode='RGB')
+        check_sign_pil = Image.open(os.path.join(DIR, r'./data/test/extractor/original_2_11.png')).convert(mode='RGB')
     check_sign_np = pil_to_np(check_sign_pil)
     
     col1, col2 = st.columns(2)
@@ -139,7 +139,7 @@ def st_ui_sign_extraction():
     if img_buf is not None:
         img_pil = Image.open(img_buf).convert(mode='RGB')
     else:
-        img_pil = Image.open(os.path.join(DIR, r'data\test\localizer\signdoc.jpg')).convert(mode='RGB')
+        img_pil = Image.open(os.path.join(DIR, r'./data/test/localizer/signdoc.jpg')).convert(mode='RGB')
 
     image_np = pil_to_np(img_pil)
     inverted_image_np = invert_image(image_np)

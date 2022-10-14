@@ -8,11 +8,13 @@ from signver.utils import data_utils
 from signver.utils.data_utils import resnet_preprocess, invert_img
 from signver.utils.visualization_utils import plot_np_array, plot_prediction_score, visualize_boxes, get_image_crops, make_square
 
+import sys, os
 import numpy as np
 from PIL import Image
 import streamlit as st
 import tensorflow as tf
 
+DIR = os.path.dirname(__file__)
 DETECTOR_MODEL_PATH = "models/detector/small"
 EXTRACTOR_MODEL_PATH = "models/extractor/metric"
 CLEANER_MODEL_PATH = "models/cleaner/small"
@@ -20,19 +22,19 @@ CLEANER_MODEL_PATH = "models/cleaner/small"
 @st.cache(allow_output_mutation=True)
 def load_detector_model():
     detector = Detector()
-    detector.load(DETECTOR_MODEL_PATH)
+    detector.load(os.path.join(DIR, DETECTOR_MODEL_PATH))
     return detector
 
 @st.cache(allow_output_mutation=True)
 def load_cleaner_model():
     cleaner = Cleaner() 
-    cleaner.load(CLEANER_MODEL_PATH)
+    cleaner.load(os.path.join(DIR, CLEANER_MODEL_PATH))
     return cleaner
 
 @st.cache(allow_output_mutation=True)
 def load_extractor_model():
     extractor = MetricExtractor() 
-    extractor.load(EXTRACTOR_MODEL_PATH)
+    extractor.load(os.path.join(DIR, EXTRACTOR_MODEL_PATH))
     return extractor
 
 def detect(input_tensor):
@@ -107,13 +109,13 @@ def st_ui_sign_verification():
     if orig_sign is not None:
         orig_sign_pil = Image.open(orig_sign).convert(mode='RGB')
     else:
-        orig_sign_pil = Image.open(r'data\test\extractor\forgeries_2_12.png').convert(mode='RGB')
+        orig_sign_pil = Image.open(os.path.join(DIR, r'data\test\extractor\forgeries_2_12.png')).convert(mode='RGB')
     orig_sign_np = pil_to_np(orig_sign_pil)
 
     if check_sign is not None:
         check_sign_pil = Image.open(check_sign).convert(mode='RGB')
     else:
-        check_sign_pil = Image.open(r'data\test\extractor\original_2_11.png').convert(mode='RGB')
+        check_sign_pil = Image.open(os.path.join(DIR, r'data\test\extractor\original_2_11.png')).convert(mode='RGB')
     check_sign_np = pil_to_np(check_sign_pil)
     
     col1, col2 = st.columns(2)
@@ -137,12 +139,12 @@ def st_ui_sign_extraction():
     if img_buf is not None:
         img_pil = Image.open(img_buf).convert(mode='RGB')
     else:
-        img_pil = Image.open(r'data\test\localizer\signdoc.jpg').convert(mode='RGB')
+        img_pil = Image.open(os.path.join(DIR, r'data\test\localizer\signdoc.jpg')).convert(mode='RGB')
 
     image_np = pil_to_np(img_pil)
     inverted_image_np = invert_image(image_np)
     img_tensor = np_to_tensor(image_np)
-    # print(img_tensor)
+
     st.header("Document vs Inverted Document")
     st.image(np.concatenate((image_np, inverted_image_np ), axis = 1))
 
@@ -160,7 +162,6 @@ def st_ui_sign_extraction():
             st.pyplot(fig_box_prediction)
             
         # annotate image with bounding boxes above a given threshold and plot 
-
         annotated_image = visualize_boxes(image_np, boxes, scores, threshold=threshold, color="green")
         with st.expander("Annoted Document", expanded=True):
             st.image(annotated_image)
@@ -178,7 +179,6 @@ def st_ui_sign_extraction():
 
         norm_sigs = [ x * (1./255) for x in sigs]
         plot_np_array(norm_sigs, "Preprocessed Signatures")
-        # cleaned_sigs = clean(np.array(norm_sigs))
 
         cleaned_sigs = signature_cleaner(signatures)
 

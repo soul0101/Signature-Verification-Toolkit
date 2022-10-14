@@ -1,4 +1,5 @@
 
+from re import L
 from signver import cleaner
 from signver.detector import Detector
 from signver.cleaner import Cleaner
@@ -9,21 +10,19 @@ from signver.utils.data_utils import resnet_preprocess, invert_img
 from signver.utils.visualization_utils import plot_np_array, plot_prediction_score, visualize_boxes, get_image_crops, make_square
 
 import sys, os
+import cv2
 import numpy as np
 from PIL import Image
 import streamlit as st
 import tensorflow as tf
+os.environ["DAISI_ACCESS_TOKEN"] = '3jHX38b81S5Ofe4qhD55NlaanuoJoJpx'
+import pydaisi as pyd
+svt_detector_model = pyd.Daisi("soul0101/SVT Detector Model")
+svt_extractor_model = pyd.Daisi("soul0101/SVT Extractor Model")
 
 DIR = os.path.dirname(__file__)
 DETECTOR_MODEL_PATH = "models/detector/small"
-EXTRACTOR_MODEL_PATH = "models/extractor/metric"
 CLEANER_MODEL_PATH = "models/cleaner/small"
-
-@st.cache(allow_output_mutation=True)
-def load_detector_model():
-    detector = Detector()
-    detector.load(os.path.join(DIR, DETECTOR_MODEL_PATH))
-    return detector
 
 @st.cache(allow_output_mutation=True)
 def load_cleaner_model():
@@ -31,23 +30,10 @@ def load_cleaner_model():
     cleaner.load(os.path.join(DIR, CLEANER_MODEL_PATH))
     return cleaner
 
-@st.cache(allow_output_mutation=True)
-def load_extractor_model():
-    extractor = MetricExtractor() 
-    extractor.load(os.path.join(DIR, EXTRACTOR_MODEL_PATH))
-    return extractor
-
-def detect(input_tensor):
-    detection_model = load_detector_model()
-    return detection_model.detect(input_tensor)
-
 def clean(image_np):
     cleaner_model = load_cleaner_model()
+    print("Cleaner model load time", cleaner_model.model_load_time)
     return cleaner_model.clean(image_np)
-
-def extract(image_np):
-    extractor_model = load_extractor_model()
-    return extractor_model.extract(image_np)
 
 def match_verify(feat_1, feat_2):
     matcher = Matcher()
@@ -62,6 +48,24 @@ def pil_to_np(image_pil):
 
 def invert_image(image_np):
     return data_utils.invert_img(image_np)
+
+def sanitize_np(image_np):
+    if not isinstance(image_np, (np.ndarray, np.generic)):
+        raise TypeError("Input must be a numpy array")
+
+    if(len(image_np.shape) == 2):
+        # return cv2.cvtColor(image_np, cv2.COLOR_GRAY2RGB)
+        return np.stack((image_np,)*3, axis=-1)
+
+    elif(len(image_np.shape) == 3):
+        if(image_np.shape[2] == 3):
+            return image_np
+        elif(image_np.shape[2] > 3):
+            return image_np[:, :, :3]
+        else:
+            return np.concatenate((image_np, np.stack((image_np[:, :, -1],) * (3 - image_np.shape[2]), axis=-1)), axis=2)
+    else:
+        raise TypeError("Invalid shape of image_np array")
 
 def np_to_tensor(image_np):
     inverted_image_np = invert_img(image_np)
@@ -80,23 +84,17 @@ def signature_cleaner(signatures):
 
     return clean(preprocessed_sigs)
 
-def signature_feature_extractor(signatures):
-    if isinstance(signatures, list):
-        sign_features = extract(np.array(signatures) / 255)
-    else:
-        sign_features = extract(signatures)
-    
-    return sign_features
-
 def verify_signatures(sig1_np, sig2_np):    
+    sig1_np = sanitize_np(sig1_np)
+    sig2_np = sanitize_np(sig2_np)
     sig1_clean = signature_cleaner(sig1_np)
     sig2_clean = signature_cleaner(sig2_np)
 
-    sig1_feats = extract(sig1_clean)
-    sig2_feats = extract(sig2_clean)
+    sig1_feats = svt_extractor_model.extract(sig1_clean).value
+    sig2_feats = svt_extractor_model.extract(sig2_clean).value
 
     return {
-        "similarity_index": match_cosine_distance(sig1_feats[0, :], sig2_feats[0, :]),
+        "cosine_distance": match_cosine_distance(sig1_feats[0, :], sig2_feats[0, :]),
         "is_match": match_verify(sig1_feats[0, :], sig2_feats[0, :])
     }
 
@@ -151,7 +149,7 @@ def st_ui_sign_extraction():
     if detect_button:
         # get a list of bounding box predictions for image
         with st.spinner("Getting detections...\n Might be slow for the first time"):
-            boxes, scores, classes, detections = detect(img_tensor)
+            boxes, scores, classes, detections = svt_detector_model.detect(img_tensor).value
 
         st.header("Signature Detection & Extraction")
         # plot confidence scores for each detections

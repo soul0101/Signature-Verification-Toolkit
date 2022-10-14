@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 import tensorflow as tf
-os.environ["DAISI_ACCESS_TOKEN"] = '3jHX38b81S5Ofe4qhD55NlaanuoJoJpx'
+# os.environ["DAISI_ACCESS_TOKEN"] = '3jHX38b81S5Ofe4qhD55NlaanuoJoJpx'
 import pydaisi as pyd
 svt_detector_model = pyd.Daisi("soul0101/SVT Detector Model")
 svt_extractor_model = pyd.Daisi("soul0101/SVT Extractor Model")

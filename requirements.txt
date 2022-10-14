@@ -7,3 +7,4 @@ scikit-image
 Pillow
 tensorflow
 streamlit
+opencv-python

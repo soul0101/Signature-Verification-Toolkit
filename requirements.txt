@@ -1,0 +1,9 @@
+faiss-cpu
+scipy
+matplotlib
+numpy
+six
+scikit-image
+Pillow
+tensorflow
+streamlit

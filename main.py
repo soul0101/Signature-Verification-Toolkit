@@ -1,16 +1,10 @@
-
-from re import L
-from signver import cleaner
-from signver.detector import Detector
 from signver.cleaner import Cleaner
-from signver.extractor import MetricExtractor
 from signver.matcher import Matcher
 from signver.utils import data_utils
 from signver.utils.data_utils import resnet_preprocess, invert_img
 from signver.utils.visualization_utils import plot_np_array, plot_prediction_score, visualize_boxes, get_image_crops, make_square
 
-import sys, os
-import cv2
+import os
 import numpy as np
 from PIL import Image
 import streamlit as st

@@ -9,7 +9,6 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 import tensorflow as tf
-# os.environ["DAISI_ACCESS_TOKEN"] = '3jHX38b81S5Ofe4qhD55NlaanuoJoJpx'
 import pydaisi as pyd
 svt_detector_model = pyd.Daisi("soul0101/SVT Detector Model")
 svt_extractor_model = pyd.Daisi("soul0101/SVT Extractor Model")
@@ -72,15 +71,13 @@ def signature_preprocessor(sig_np):
 
 def signature_cleaner(signatures):
     if isinstance(signatures, list):
-        preprocessed_sigs = np.array([signature_preprocessor(sign) * (1./255) for sign in signatures])
+        preprocessed_sigs = np.array([signature_preprocessor(sanitize_np(sign)) * (1./255) for sign in signatures])
     else:
-        preprocessed_sigs = np.expand_dims(signature_preprocessor(signatures), axis=0)
+        preprocessed_sigs = np.expand_dims(signature_preprocessor(sanitize_np(signatures)), axis=0)
 
     return clean(preprocessed_sigs)
 
 def verify_signatures(sig1_np, sig2_np):    
-    sig1_np = sanitize_np(sig1_np)
-    sig2_np = sanitize_np(sig2_np)
     sig1_clean = signature_cleaner(sig1_np)
     sig2_clean = signature_cleaner(sig2_np)
 
@@ -123,7 +120,8 @@ def st_ui_sign_verification():
             col1.image(cleaned_orig_sign, "Original Signature")
             col2.image(cleaned_check_sign, "Sign to be verified")
 
-        st.json(verify_signatures(orig_sign_np, check_sign_np))
+        with st.spinner("Extracting Features...\n Might be slow for the first time"):
+            st.json(verify_signatures(orig_sign_np, check_sign_np))
 
 def st_ui_sign_extraction():
     img_buf = st.sidebar.file_uploader("Upload_file")

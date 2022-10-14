@@ -131,7 +131,6 @@ def st_ui_sign_verification():
             col1.image(cleaned_orig_sign, "Original Signature")
             col2.image(cleaned_check_sign, "Sign to be verified")
 
-        
         st.json(verify_signatures(orig_sign_np, check_sign_np))
 
 def st_ui_sign_extraction():

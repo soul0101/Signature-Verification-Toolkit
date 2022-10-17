@@ -11,7 +11,7 @@ class Matcher():
     def cosine_distance(self, vector_1, vector_2):
         return cosine(vector_1.flatten(), vector_2.flatten())
 
-    def verify(self, vector_1, vector_2, threshold=0.18) -> bool:
+    def verify(self, vector_1, vector_2, threshold=0.50) -> bool:
         distance = self.cosine_distance(
             vector_1.flatten(), vector_2.flatten())
         return distance < threshold

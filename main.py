@@ -302,7 +302,7 @@ def st_ui_sign_extraction():
     if detect_button:
         # get a list of bounding box predictions for image
         with st.spinner("Getting detections...\n Might be slow for the first time"):
-            boxes, scores, classes, detections = signature_detector(img_tensor).value
+            boxes, scores, classes, detections = signature_detector(img_tensor)
 
         st.header("Signature Detection & Extraction")
         # plot confidence scores for each detections

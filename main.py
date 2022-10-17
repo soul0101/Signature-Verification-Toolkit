@@ -14,6 +14,15 @@ import pydaisi as pyd
 svt_detector_model = pyd.Daisi("soul0101/SVT Detector Model")
 svt_extractor_model = pyd.Daisi("soul0101/SVT Extractor Model")
 
+try:
+    svt_detector_model.workers.set(1)
+except:
+    pass
+try:
+    svt_extractor_model.workers.set(1)
+except:
+    pass
+
 DIR = os.path.dirname(__file__)
 CLEANER_MODEL_PATH = "models/cleaner/small"
 

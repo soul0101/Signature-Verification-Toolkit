@@ -15,11 +15,13 @@ svt_detector_model = pyd.Daisi("soul0101/SVT Detector Model")
 svt_extractor_model = pyd.Daisi("soul0101/SVT Extractor Model")
 
 try:
-    svt_detector_model.workers.set(1)
+    if svt_detector_model.workers.number == 0:
+        svt_detector_model.workers.set(1)
 except:
     pass
 try:
-    svt_extractor_model.workers.set(1)
+    if svt_extractor_model.workers.number == 0:
+        svt_extractor_model.workers.set(1)
 except:
     pass
 
